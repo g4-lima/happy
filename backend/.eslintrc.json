@@ -20,6 +20,9 @@
     ],
     "rules": {
       "class-methods-use-this": "off",
-      "import/prefer-default-export": "off"
+      "import/prefer-default-export": "off",
+      "camelcase": "off",
+      "import/no-unresolved": "off",
+      "import/extensions": "off"
     }
 }
