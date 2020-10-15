@@ -3,6 +3,28 @@ import { getRepository } from 'typeorm';
 import Orphanage from '../models/Orphanage';
 
 export default {
+  async index(request: Request, response: Response) {
+    const orphanageRepository = getRepository(Orphanage);
+
+    const orphanages = await orphanageRepository.find();
+
+    return response.json(orphanages);
+  },
+
+  async show(request: Request, response: Response) {
+    const orphanageRepository = getRepository(Orphanage);
+
+    const { id } = request.params;
+
+    try {
+      const orphanate = await orphanageRepository.findOneOrFail(id);
+
+      return response.json(orphanate);
+    } catch {
+      return response.status(404).json({ message: 'Orfanato não enconstado' });
+    }
+  },
+
   async create(request: Request, response: Response) {
     const {
       name,
