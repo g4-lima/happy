@@ -1,14 +1,18 @@
 import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
+
 import Orphanage from '../models/Orphanage';
+import orphanageView from '../views/orphanages_view';
 
 export default {
   async index(request: Request, response: Response) {
     const orphanageRepository = getRepository(Orphanage);
 
-    const orphanages = await orphanageRepository.find();
+    const orphanages = await orphanageRepository.find({
+      relations: ['images'],
+    });
 
-    return response.json(orphanages);
+    return response.json(orphanageView.renderMany(orphanages));
   },
 
   async show(request: Request, response: Response) {
@@ -17,11 +21,13 @@ export default {
     const { id } = request.params;
 
     try {
-      const orphanate = await orphanageRepository.findOneOrFail(id);
+      const orphanate = await orphanageRepository.findOneOrFail(id, {
+        relations: ['images'],
+      });
 
-      return response.json(orphanate);
+      return response.json(orphanageView.render(orphanate));
     } catch {
-      return response.status(404).json({ message: 'Orfanato não enconstado' });
+      return response.status(404).json({ message: 'Orfanato não encontrado' });
     }
   },
 
@@ -39,7 +45,7 @@ export default {
     const orphanagesRepository = getRepository(Orphanage);
 
     const requestImages = request.files as Express.Multer.File[];
-    const images = requestImages.map((image) => ({ path: image.fieldname }));
+    const images = requestImages.map((image) => ({ path: image.filename }));
 
     const orphanage = orphanagesRepository.create({
       name,
