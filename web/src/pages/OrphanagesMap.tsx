@@ -14,28 +14,16 @@ interface Orphanges {
   name: string;
   latitude: number;
   longitude: number;
-  about: string;
-  intructions: string;
-  opening_hours: string;
-  open_on_weekends: boolean;
-  images: [
-    {
-      id: number;
-      url: string;
-    },
-  ];
 }
 
 const OrphanagesMap: React.FC = () => {
-  const [orphanages, setOrphanages] = useState<Orphanges[]>();
+  const [orphanages, setOrphanages] = useState<Orphanges[]>([]);
 
   useEffect(() => {
     api.get('/orphanages').then(response => {
       setOrphanages(response.data);
     });
   }, []);
-
-  console.log(orphanages);
 
   return (
     <div id="page-map">

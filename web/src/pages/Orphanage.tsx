@@ -1,14 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { FaWhatsapp } from 'react-icons/fa';
-import { FiClock, FiInfo } from 'react-icons/fi';
+import { FiClock, FiInfo, FiXCircle } from 'react-icons/fi';
 import { Map, Marker, TileLayer } from 'react-leaflet';
 
+import api from '../services/api';
 import Sidebar from '../components/Sidebar';
 import mapIcon from '../utils/mapIcons';
 
 import '../styles/pages/orphanage.css';
 
+interface OrphanageParams {
+  id: string;
+}
+
+interface Orphanage {
+  id: number;
+  name: string;
+  latitude: number;
+  longitude: number;
+  about: string;
+  instructions: string;
+  opening_hours: string;
+  open_on_weekends: boolean;
+}
+
 const Orphanage: React.FC = () => {
+  const params = useParams<OrphanageParams>();
+  const [orphanage, setOrphanage] = useState<Orphanage>();
+
+  useEffect(() => {
+    api
+      .get(`/orphanages/${params.id}`)
+      .then(response => setOrphanage(response.data));
+  }, [params.id]);
+
   return (
     <div id="page-orphanage">
       <Sidebar />
@@ -60,11 +86,8 @@ const Orphanage: React.FC = () => {
           </div>
 
           <div className="orphanage-details-content">
-            <h1>Lar das meninas</h1>
-            <p>
-              Presta assistência a crianças de 06 a 15 anos que se encontre em
-              situação de risco e/ou vulnerabilidade social.
-            </p>
+            <h1>{orphanage?.name}</h1>
+            <p>{orphanage?.about}</p>
 
             <div className="map-container">
               <Map
@@ -88,27 +111,45 @@ const Orphanage: React.FC = () => {
               </Map>
 
               <footer>
-                <a href="">Ver rotas no Google Maps</a>
+                <Link to="/app">Ver rotas no Google Maps</Link>
               </footer>
             </div>
 
             <hr />
 
             <h2>Instruções para visita</h2>
-            <p>
-              Venha como se sentir mais à vontade e traga muito amor para dar.
-            </p>
+            <p>{orphanage?.instructions}</p>
 
             <div className="open-details">
               <div className="hour">
                 <FiClock size={32} color="#15B6D6" />
                 Segunda à Sexta <br />
-                8h às 18h
+                {orphanage?.opening_hours}
               </div>
-              <div className="open-on-weekends">
-                <FiInfo size={32} color="#39CC83" />
-                Atendemos <br />
-                fim de semana
+              <div
+                className={
+                  orphanage?.open_on_weekends
+                    ? 'open-on-weekends'
+                    : 'not-open-on-weekends'
+                }
+              >
+                {orphanage?.open_on_weekends ? (
+                  <>
+                    <FiInfo size={32} color="#39CC83" />
+                    <p>
+                      Atendemos <br />
+                      fim de semana
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <FiXCircle size={32} color="#c73737" />
+                    <p>
+                      Não atendemos <br />
+                      fim de semana
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
