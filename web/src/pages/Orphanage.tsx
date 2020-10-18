@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { FaWhatsapp } from 'react-icons/fa';
+import { useParams } from 'react-router-dom';
 import { FiClock, FiInfo, FiXCircle } from 'react-icons/fi';
 import { Map, Marker, TileLayer } from 'react-leaflet';
 
@@ -23,17 +22,26 @@ interface Orphanage {
   instructions: string;
   opening_hours: string;
   open_on_weekends: boolean;
+  images: Array<{
+    url: string;
+    id: number;
+  }>;
 }
 
 const Orphanage: React.FC = () => {
   const params = useParams<OrphanageParams>();
   const [orphanage, setOrphanage] = useState<Orphanage>();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     api
       .get(`/orphanages/${params.id}`)
       .then(response => setOrphanage(response.data));
   }, [params.id]);
+
+  if (!orphanage) {
+    return <p>Carregando...</p>;
+  }
 
   return (
     <div id="page-orphanage">
@@ -42,47 +50,23 @@ const Orphanage: React.FC = () => {
       <main>
         <div className="orphanage-details">
           <img
-            src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-            alt="Lar das meninas"
+            src={orphanage.images[activeImageIndex].url}
+            alt={orphanage.name}
           />
 
           <div className="images">
-            <button className="active" type="button">
-              <img
-                src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-                alt="Lar das meninas"
-              />
-            </button>
-            <button type="button">
-              <img
-                src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-                alt="Lar das meninas"
-              />
-            </button>
-            <button type="button">
-              <img
-                src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-                alt="Lar das meninas"
-              />
-            </button>
-            <button type="button">
-              <img
-                src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-                alt="Lar das meninas"
-              />
-            </button>
-            <button type="button">
-              <img
-                src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-                alt="Lar das meninas"
-              />
-            </button>
-            <button type="button">
-              <img
-                src="https://www.gcd.com.br/wp-content/uploads/2020/08/safe_image.jpg"
-                alt="Lar das meninas"
-              />
-            </button>
+            {orphanage.images.map((image, index) => {
+              return (
+                <button
+                  key={image.id}
+                  className={activeImageIndex === index ? 'active' : ''}
+                  type="button"
+                  onClick={() => setActiveImageIndex(index)}
+                >
+                  <img src={image.url} alt={orphanage.name} />
+                </button>
+              );
+            })}
           </div>
 
           <div className="orphanage-details-content">
@@ -91,7 +75,7 @@ const Orphanage: React.FC = () => {
 
             <div className="map-container">
               <Map
-                center={[-27.2092052, -49.6401092]}
+                center={[orphanage.latitude, orphanage.longitude]}
                 zoom={16}
                 style={{ width: '100%', height: 280 }}
                 dragging={false}
@@ -106,12 +90,18 @@ const Orphanage: React.FC = () => {
                 <Marker
                   interactive={false}
                   icon={mapIcon}
-                  position={[-27.2092052, -49.6401092]}
+                  position={[orphanage.latitude, orphanage.longitude]}
                 />
               </Map>
 
               <footer>
-                <Link to="/app">Ver rotas no Google Maps</Link>
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${orphanage.latitude},${orphanage.longitude}`}
+                >
+                  Ver rotas no Google Maps
+                </a>
               </footer>
             </div>
 
@@ -126,37 +116,29 @@ const Orphanage: React.FC = () => {
                 Segunda à Sexta <br />
                 {orphanage?.opening_hours}
               </div>
-              <div
-                className={
-                  orphanage?.open_on_weekends
-                    ? 'open-on-weekends'
-                    : 'not-open-on-weekends'
-                }
-              >
-                {orphanage?.open_on_weekends ? (
-                  <>
-                    <FiInfo size={32} color="#39CC83" />
-                    <p>
-                      Atendemos <br />
-                      fim de semana
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <FiXCircle size={32} color="#c73737" />
-                    <p>
-                      Não atendemos <br />
-                      fim de semana
-                    </p>
-                  </>
-                )}
-              </div>
+              {orphanage?.open_on_weekends ? (
+                <div className="open-on-weekends">
+                  <FiInfo size={32} color="#39CC83" />
+                  <p>
+                    Atendemos <br />
+                    fim de semana
+                  </p>
+                </div>
+              ) : (
+                <div className="not-open-on-weekends">
+                  <FiXCircle size={32} color="#c73737" />
+                  <p>
+                    Não atendemos <br />
+                    fim de semana
+                  </p>
+                </div>
+              )}
             </div>
 
-            <button type="button" className="contact-button">
+            {/* <button type="button" className="contact-button">
               <FaWhatsapp size={20} color="#FFF" />
               Entrar em contato
-            </button>
+            </button> */}
           </div>
         </div>
       </main>
