@@ -35,6 +35,7 @@
     "react/jsx-props-no-spreading": "off",
     "react/jsx-one-expression-per-line": "off",
     "camelcase": "off",
+    "jsx-a11y/label-has-associated-control": "off",
     "no-use-before-define": "off",
     "no-unused-expressions": "off",
     "react/jsx-filename-extension": [1, { "extensions": [".tsx"] }],
